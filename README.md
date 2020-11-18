@@ -75,7 +75,11 @@
     - 点击文件树节点事件 
     
         clickFile: (openedPath,treeNode)=>{}
-    
+        
+            参数|类型|备注
+                -|-|-
+            openedPath|string|点击的文件的路径
+            
             参数说明：
             - openedPath: 点击的文件的路径
             - treeNode: 点击的文件的节点数据
