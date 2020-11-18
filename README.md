@@ -1,70 +1,167 @@
-# Getting Started with Create React App
+# bztree安装和使用
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Installation 
+ `npm install bztree`
 
-## Available Scripts
+## 配置和API
 
-In the project directory, you can run:
+>**必须配置项：**
 
-### `yarn start`
+1. **zNodes: 树节点(treeNode)对象数组**
+    
+    treeNode对象：
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+    属性|类型|备注
+    -|-|-|
+    id|number|节点id
+    pId|number|所在文件夹的节点id
+    name|string|节点名称(default:null)
+    open|bool|是否展开文件夹(default:false)
+    isParent|bool|是否文件夹
+    path|string|路径（由组件内部自动生成）
+    
+    示例:
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+        
+            const zNodes = [{ "id": 1, "pId": 0, "name": "pNode1", "open": true },
+            { "id": 11, "pId": 1, "name": "pNode 11", },
+            { "id": 111, "pId": 11, "name": "sNode 111.js", },
+            { "id": 112, "pId": 11, "name": "sNode 112.json" },
+            { "id": 2, "pId": 0, "name": "pNode 2", "isParent":"true"},
+            { "id": 3, "pId": 0, "name": "index.js", },
+            { "id": 4, "pId": 0, "name": "package.json", }
+            ];
+             
+        
+2. **configure: 相关事件配置**
 
-### `yarn test`
+    - 右键菜单 *Create File* 点击事件
+    
+        addFile: (oldpath,parentNode,newfile,newfilename)=>{}
+        
+            参数|类型|备注
+            -|-|-
+            oldpath|string|新建文件时以文件名 new file 生成的文件路径
+            parentNode|object|新文件所在文件夹的节点数据,若在根节点下新建则parentNode为undefined(pId=0)
+            newfile|object|新建节点的数据
+            newfilename|string|新建节点名称(default:new file)
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+    - 右键菜单 *Create Folder* 点击事件
+    
+        addFolder: (parentNode,newfolder,newfoldername)=>{}
+        
+            参数|类型|备注
+            -|-|-
+            parentNode|object|新建文件夹所在文件夹的节点数据,若在根节点下新建则parentNode为undefined(pId=0)
+            newfolder|object|新建文件夹的节点数据
+            newfoldername|string|新建文件夹名称(default:new folder)
 
-### `yarn build`
+    - 右键菜单 *Rename* 点击事件
+    
+        rename: (oldpath,node,oldname,newname)=>{}
+        
+            参数|类型|备注
+            -|-|-
+            oldpath|string|重命名前的文件路径
+            node|object|重命名后的节点数据
+            oldname|string|重命名前节点名称
+            newname|string|重命名后节点名称
+         
+    - 右键菜单 *Delete* 点击事件
+    
+        remove: (node)=>{}
+        
+            参数|类型|备注
+            -|-|-
+            node|object|删除的节点
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+    - 点击文件树节点事件 
+    
+        clickFile: (openedPath,treeNode)=>{}
+        
+            参数|类型|备注
+            -|-|-
+            openedPath|string|点击节点的路径
+            treeNode|object|点击的文件的节点数据
+    
+    
+>**获取组件实例，调用zTree插件的API**
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+ [jquery zTree]: http://www.treejs.cn/v3/api.php "jquery zTree API"
+使用ref获取ztree实例，进而可以使用 [jquery zTree] 中的API(更多treeNode属性也可在里面查看)
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+    获取zTreeObj: this.ztree.current.ztreeObj
 
-### `yarn eject`
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+## example
+```js
+import * as React from 'react';
+import Ztree from 'bztree';
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+const zNodes = [{ "id": 1, "pId": 0, "name": "pNode 1", "open": true },
+{ "id": 11, "pId": 1, "name": "pNode 11", },
+{ "id": 111, "pId": 11, "name": "sNode 111.js", },
+{ "id": 112, "pId": 11, "name": "sNode 112.html", },
+{ "id": 113, "pId": 11, "name": "sNode 113.css" },
+{ "id": 114, "pId": 11, "name": "sNode 114.json" },
+{ "id": 2, "pId": 0, "name": "pNode 3", "isParent":"true" },
+{ "id": 3, "pId": 0, "name": "index.js", },
+{ "id": 4, "pId": 0, "name": "package.json", }
+];
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+export default class MySandpackProvider extends React.PureComponent<Props, State> {
+    constructor(props: Props) {
+        super(props);
+        this.ztree=React.createRef()
+    }
+    
+    saveFiles = () => {
+        //获取zTree对象：this.ztree.current.ztreeObj
+        this.ztree.current.ztreeObj.cancelSelectedNode();
+        this.ztree.current.ztreeObj.selectNode(ele);
+    };
+    
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+    render() {
+        const configure = {
+            addFile: (oldpath,parentNode, newfile, newfilename) => {
+                //新建文件事件
+                console.log("APP configure file parentNode", parentNode)
+                console.log("APP configure 新增file是：" , newfile)
+                console.log("APP configure 新增file的name是：" + newfilename)
+            },
+            addFolder: (parentNode, newfolder, newfoldername) => {
+                //新建文件夹事件
+                console.log("APP configure folder parentNode", parentNode)
+                console.log("APP configure 新增folder是：", newfolder)
+                console.log("APP configure 新增folder的name是：" + newfoldername)
+            },
+            rename: (oldpath,node, oldname, newname) => {
+                //重命名节点事件
+                console.log("APP configure rename node:", node)
+                console.log("APP configure rename:" + newname);
+                console.log("APP configure old name:" + oldname)
+            },
+            remove: (node) => {
+                //删除节点事件
+                console.log("APP remove", node);
+            },
+            clickFile: (openedPath, treeNode) => {
+                //点击文件事件
+                console.log("APP clickFile", treeNode);
+            }
+        };
 
-## Learn More
+        return (
+            <div className='sandpack'>
+                <Ztree
+                    zNodes={zNodes}
+                    configure={configure}
+                    ref={this.ztree}
+                />
+            </div>
+        );
+    }
+}
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `yarn build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+```

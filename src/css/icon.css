@@ -1,0 +1,48 @@
+/*文件图标 */
+.ztree li span.button {
+	margin-right: 5px;
+	vertical-align: top;
+	*vertical-align: middle;
+}
+.ztree li span.button.ico_open {
+	background-image: url(../css/icons/default_folder_opened.svg);
+}
+.ztree li span.button.ico_close {
+	background-image: url(../css/icons/default_folder.svg);
+}
+.ztree li span.button.ico_docu{
+	background-image: url(../css/icons/default_file.svg);
+}
+.ztree li span.button.ico_html {
+	background-image: url(../css/icons/file_type_html.svg);
+}
+.ztree li span.button.ico_js {
+	background-image: url(../css/icons/file_type_js.svg);
+}
+.ztree li span.button.ico_css {
+	background-image: url(../css/icons/file_type_css.svg);
+}
+.ztree li span.button.ico_ts {
+	background-image: url(../css/icons/file_type_typescript.svg);
+}
+.ztree li span.button.ico_json {
+	background-image: url(../css/icons/file_type_json.svg);
+}
+.ztree li span.button.ico_image {
+	background-image: url(../css/icons/file_type_image.svg);
+}
+.ztree li span.button.ico_svg {
+	background-image: url(../css/icons/file_type_svg.svg);
+}
+.ztree li span.button.ico_video {
+	background-image: url(../css/icons/file_type_video.svg);
+}
+.ztree li span.button.ico_audio {
+	background-image: url(../css/icons/file_type_audio.svg);
+}
+.ztree li span.button.ico_text {
+	background-image: url(../css/icons/file_type_text.svg);
+}
+.ztree li span.button.ico_license {
+	background-image: url(../css/icons/file_type_license.svg);
+}

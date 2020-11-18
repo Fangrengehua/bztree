@@ -1,0 +1,270 @@
+/*-------------------------------------
+zTree Style
+
+version:    3.4
+author:     Hunter.z
+email:      hunter.z@263.net
+website:    http://code.google.com/p/jquerytree/
+
+-------------------------------------*/
+/* right click menu */
+#rMenu{
+    position: absolute;
+    visibility: hidden;
+    top: 0;
+	text-align: left;
+	z-index: 22;
+}
+#rMenu .menu{
+	margin: 0;
+	padding: 5px 1px; 
+	background-color: #ffffff; 
+	box-shadow:0 0 10px rgb(136, 136, 136);
+} 
+#rMenu .menu li{
+	margin: 0;
+    padding: 5px 15px;
+    cursor: pointer;
+    list-style: none outside none;
+	color: #303030;
+	border-bottom: #cfcfcf solid 1px;
+    background-color: #ffffff; 
+}
+#rMenu .menu .item:hover {
+  color: #ffffff;
+  background-color: #0971f1;
+}
+
+/* ztree style */
+#tree #treeDemo{
+	width: 350px;
+	height: 100%;
+	background-color:  #f5f5f5;
+}
+.ztree * {
+	padding: 0;
+	margin: 0;
+  	font-size: 13px;
+  	/* background-color: #ffffff; */
+	font-family: Verdana, Arial, Helvetica, AppleGothic, sans-serif;
+}
+.ztree {
+	margin: 0;
+	padding: 0px;
+	color: #ffffff;
+}
+/* Folder */
+.ztree li {
+	padding: 0;
+	margin: 0;
+	list-style: none;
+	line-height: 21px;
+	text-align: left;
+	white-space: nowrap;
+	outline: 0;
+}
+/* File */
+.ztree li ul {
+	margin: 0;
+	padding: 0 0 0 21px;
+	height: 100%;
+}
+/* 图标资源 */
+.ztree li ul.line {
+	background: url(./img/line_conn.png) 0 0 repeat-y;
+}
+/* FileName */
+.ztree li a {
+	padding-right: 3px;
+	margin: 0;
+	cursor: pointer;
+	height: 21px;
+	color:  #757575;
+	background-color: transparent;
+	text-decoration: none;
+	vertical-align: top;
+	display: inline-block;
+}
+.ztree li a:hover {
+	color:  #000000;
+}
+/* 选中节点背景色 */
+.ztree li a.curSelectedNode {
+	padding-top: 0px;
+	background-color:  #05588863;
+	color:#ffffff;
+	height: 21px;
+	opacity: 0.8;
+}
+/* 节点重命名编辑时样式 */
+.ztree li a.curSelectedNode_Edit {
+	padding-top: 0px;
+	background-color:transparent;
+	color: black;
+	height: 21px;
+	border: none;
+	opacity: 0.8;
+}
+/* 拖拽节点放到另一个节点上的样式 */
+.ztree li a.tmpTargetNode_inner {
+	padding-top: 0px;
+	background-color: #83bbff;
+	color: white;
+	height: 21px;
+	border: 1px #666 solid;
+	opacity: 0.8;
+	filter: alpha(opacity=80);
+}
+/* 重命名编辑框样式 */
+.ztree li a input .rename{
+  height: 14px;
+  width: 80px;
+  padding: 0;
+  margin: 0;
+  color: #303030;
+  background-color:transparent;
+  font-size: 12px;
+  border: 1px #0971f1 solid;
+  *border: 0px;
+}
+.ztree li span {
+	line-height: 21px;
+	margin-right: 5px;
+	background-color: transparent;
+}
+.ztree li span.button {
+	line-height: 0;
+	margin: 0;
+	padding: 0;
+	width: 21px;
+	height: 21px;
+	display: inline-block;
+	vertical-align: middle;
+	border: 0 none;
+	cursor: pointer;
+	outline: none;
+	background-color: transparent;
+	background-repeat: no-repeat;
+	background-attachment: scroll;
+	background-image: url("./img/metro.png");
+	*background-image: url("./img/metro.png");
+}
+
+
+.ztree li span.button.switch {
+	width: 21px;
+	height: 21px;
+}
+.ztree li span.button.root_open {
+	background-position: -105px -63px;
+}
+.ztree li span.button.root_close {
+	background-position: -126px -63px;
+}
+.ztree li span.button.roots_open {
+	background-position: -105px 0;
+}
+.ztree li span.button.roots_close {
+	background-position: -126px 0;
+}
+.ztree li span.button.center_open {
+	background-position: -105px -21px;
+}
+.ztree li span.button.center_close {
+	background-position: -126px -21px;
+}
+.ztree li span.button.bottom_open {
+	background-position: -105px -42px;
+}
+.ztree li span.button.bottom_close {
+	background-position: -126px -42px;
+}
+.ztree li span.button.noline_open {
+	background-position: -105px -84px;
+}
+.ztree li span.button.noline_close {
+	background-position: -126px -84px;
+}
+.ztree li span.button.root_docu {
+	background: none;
+}
+.ztree li span.button.roots_docu {
+	background-position: -84px 0;
+}
+.ztree li span.button.center_docu {
+	background-position: -84px -21px;
+}
+.ztree li span.button.bottom_docu {
+	background-position: -84px -42px;
+}
+.ztree li span.button.noline_docu {
+	background: none;
+}
+
+/* 文件名后的图标按钮 */
+.ztree li span.button.edit {
+	margin-left: 2px;
+	margin-right: -1px;
+	background-position: -189px -21px;
+	vertical-align: top;
+	*vertical-align: middle;
+}
+.ztree li span.button.edit:hover {
+	background-position: -168px -21px;
+}
+.ztree li span.button.remove {
+	margin-left: 2px;
+	margin-right: -1px;
+	background-position: -189px -42px;
+	vertical-align: top;
+	*vertical-align: middle;
+}
+.ztree li span.button.remove:hover {
+	background-position: -168px -42px;
+}
+.ztree li span.button.add {
+	margin-left: 2px;
+	margin-right: -1px;
+	background-position: -189px 0;
+	vertical-align: top;
+	*vertical-align: middle;
+}
+.ztree li span.button.add:hover {
+	background-position: -168px 0;
+}
+/* 选中整个文件树时的背景色 */
+ul.tmpTargetzTree {
+	background-color:#afe4ff;
+	opacity: 0.8;
+	filter: alpha(opacity=30);
+}
+
+/* span.tmpzTreeMove_arrow {
+	width: 16px;
+	height: 21px;
+	display: inline-block;
+	padding: 0;
+	margin: 2px 0 0 1px;
+	border: 0 none;
+	position: absolute;
+	background-color: transparent;
+	background-repeat: no-repeat;
+	background-attachment: scroll;
+	background-position: -168px -84px;
+	background-image: url("./img/metro.png");
+	*background-image: url("./img/metro.gif");
+} */
+
+ul.ztree.zTreeDragUL {
+	margin: 0;
+	padding: 0;
+	position: absolute;
+	width: auto;
+	height: auto;
+	overflow: hidden;
+	background-color:#d4e7ff;
+	color: white;
+	border-radius: 30px;
+	opacity: 0.8;
+	filter: alpha(opacity=80);
+} 

@@ -1,38 +1,25 @@
 {
-  "name": "fztree",
-  "version": "0.1.0",
-  "private": true,
+  "name": "bztree",
+  "version": "1.0.4",
+  "description": "",
+  "main": "index.js",
   "dependencies": {
-    "@testing-library/jest-dom": "^5.11.4",
-    "@testing-library/react": "^11.1.0",
-    "@testing-library/user-event": "^12.1.10",
-    "react": "^17.0.1",
-    "react-dom": "^17.0.1",
-    "react-scripts": "4.0.0",
-    "web-vitals": "^0.2.4"
+    "jquery": "^3.5.1",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "cleanLib": "./node_modules/.bin/rimraf lib",
+    "bableBuild": "./node_modules/.bin/babel src --out-dir lib",
+    "prepublish": "npm run cleanLib && npm run bableBuild"
   },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-react": "^6.24.1",
+    "rimraf": "^3.0.2"
   }
 }
