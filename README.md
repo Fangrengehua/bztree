@@ -40,10 +40,10 @@
         addFile: (oldpath,parentNode,newfile,newfilename)=>{}
     
             参数说明：
-            - oldpath: 新建文件时以文件名 new file 生成的文件路径
-            - parentNode: 新文件所在文件夹的节点数据,若在根节点下新建则parentNode为undefined(pId=0)
-            - newfile: 新建节点的数据
-            - newfilename: 新建节点名称(default:new file)
+            - oldpath: (string)新建文件时以文件名 new file 生成的文件路径
+            - parentNode: (object)新文件所在文件夹的节点数据,若在根节点下新建则parentNode为undefined(pId=0)
+            - newfile: (object)新建节点的数据
+            - newfilename: (string)新建节点名称(default:new file)
             
 
     - 右键菜单 *Create Folder* 点击事件
@@ -51,38 +51,34 @@
         addFolder: (parentNode,newfolder,newfoldername)=>{}
         
             参数说明：
-            - parentNode: 新建文件夹所在文件夹的节点数据,若在根节点下新建则parentNode为undefined(pI=0)
-            - newfolder: 新建文件夹的节点数据
-            - newfoldername: 新建文件夹名称(default:new folder)
+            - parentNode: (object)新建文件夹所在文件夹的节点数据,若在根节点下新建则parentNode为undefined(pI=0)
+            - newfolder: (object)新建文件夹的节点数据
+            - newfoldername: (string)新建文件夹名称(default:new folder)
             
     - 右键菜单 *Rename* 点击事件
     
         rename: (oldpath,node,oldname,newname)=>{}
     
             参数说明：
-            - oldpath: 重命名前的文件路径
-            - node: 重命名后的节点数据
-            - oldname: 重命名前节点名称
-            - newname: 重命名后节点名称
+            - oldpath: (string)重命名前的文件路径
+            - node: (object)重命名后的节点数据
+            - oldname: (string)重命名前节点名称
+            - newname: (string)重命名后节点名称
          
     - 右键菜单 *Delete* 点击事件
     
         remove: (node)=>{}
     
             参数说明：
-            - node: 删除的节点
+            - node: (object)删除的节点
          
     - 点击文件树节点事件 
     
         clickFile: (openedPath,treeNode)=>{}
         
-            参数|类型|备注
-                -|-|-
-            openedPath|string|点击的文件的路径
-            
             参数说明：
-            - openedPath: 点击的文件的路径
-            - treeNode: 点击的文件的节点数据
+            - openedPath: (string)点击的文件的路径
+            - treeNode: (object)点击的文件的节点数据
 
 
 >**获取组件实例，调用zTree插件API**
