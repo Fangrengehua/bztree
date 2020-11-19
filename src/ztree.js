@@ -231,11 +231,13 @@ export default class ReactZtree extends PureComponent {
                     newfolder.path = _this.setFilePath(newfolder, []);
                     newfolder._source.filePath = newfolder.path;
                     newfolder._source.filename = newfolder.name;
+                    var parentFolder = null;
                     parentNode = newfolder.getParentNode();
                     if (parentNode) {
                         parentNode._source.subdirectory.push(newfolder._source);
+                        parentFolder = parentNode._source;
                     }
-                    configure.addFolder && configure.addFolder(parentNode, newfolder._source)
+                    configure.addFolder && configure.addFolder(parentFolder, newfolder._source)
                     $(this).hide()
                     $(this).parent().html(newfoldername)
                 }).bind('keydown', function (event) {
@@ -249,11 +251,13 @@ export default class ReactZtree extends PureComponent {
                         newfolder.path = _this.setFilePath(newfolder, [])
                         newfolder._source.filePath = newfolder.path;
                         newfolder._source.filename = newfolder.name;
+                        var parentFolder = null;
                         parentNode = newfolder.getParentNode();
                         if (parentNode) {
                             parentNode._source.subdirectory.push(newfolder._source);
+                            parentFolder = parentNode._source;
                         }
-                        configure.addFolder && configure.addFolder(parentNode, newfolder._source)
+                        configure.addFolder && configure.addFolder(parentFolder, newfolder._source)
                         $(this).hide()
                         $(this).parent().html(newfoldername)
                     }
@@ -285,7 +289,7 @@ export default class ReactZtree extends PureComponent {
                     _this.exeConfigureRename($(this), oldsource, node, oldpath, oldname, configure)
                 }
             }).bind('click', function (event) {
-                
+                console.log("click")
                 return false;
             }).bind('dblclick', function (event) {
                 return false;
@@ -322,11 +326,13 @@ export default class ReactZtree extends PureComponent {
             return false;
         }
         this.ztreeObj.updateNode(newfile);
+        var parentFolder = null;
         parentNode = newfile.getParentNode();
         if (parentNode) {
             parentNode._source.subdirectory.push(newfile._source);
+            parentFolder = parentNode._source;
         }
-        configure.addFile && configure.addFile(parentNode, newfile._source)
+        configure.addFile && configure.addFile(parentFolder, newfile._source)
         // configure.addFile && configure.addFile(oldpath, parentNode, newfile, newfilename)
     }
     exeConfigureRename(input, oldsource, node, oldpath, oldname, configure) {
