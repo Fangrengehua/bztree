@@ -7,78 +7,85 @@
 
 >**必须配置项：**
 
-1. **zNodes: 树节点(treeNode)对象数组**
+1. **filetree: 文件树节点(fileNode)对象数组**
     
-    treeNode对象：
+    fileNode对象：
 
     属性|类型|备注
     -|-|-|
-    id|number|节点id
-    pId|number|所在文件夹的节点id
-    name|string|节点名称(default:null)
-    open|bool|是否展开文件夹(default:false)
-    isParent|bool|是否文件夹
-    path|string|路径（由组件内部自动生成）
+    id|number|由组件内部自动生成
+    filename|string|文件名
+    isFolder|bool|是否文件夹
+    extend|bool|是否展开文件夹
+    filePath|string|绝对路径
+    subdirectory|fileNode数组|子文件目录
     
     示例:
 
         
-            const zNodes = [{ "id": 1, "pId": 0, "name": "pNode1", "open": true },
-            { "id": 11, "pId": 1, "name": "pNode 11", },
-            { "id": 111, "pId": 11, "name": "sNode 111.js", },
-            { "id": 112, "pId": 11, "name": "sNode 112.json" },
-            { "id": 2, "pId": 0, "name": "pNode 2", "isParent":"true"},
-            { "id": 3, "pId": 0, "name": "index.js", },
-            { "id": 4, "pId": 0, "name": "package.json", }
-            ];
+        const filetree = [
+        {
+            filename: "pNode0 1",
+            isFolder: true,
+            filePath: "",
+            extend: true,
+            subdirectory: [
+                {
+                    filename: "pNode1 1",
+                    isFolder: true,
+                    filePath: "",
+                    extend: false,
+                    subdirectory: [
+                    {
+                        filename: "sNode11 1.js",
+                        isFolder: false,
+                        filePath: "",
+                    }]
+                }
+            ]}]
+
              
         
 2. **configure: 相关事件配置**
 
     - 右键菜单 *Create File* 点击事件
     
-        addFile: (oldpath,parentNode,newfile,newfilename)=>{}
+        addFile: (parentFolder, newFile)=>{}
     
             参数说明：
-            - oldpath: (string)新建文件时以文件名 new file 生成的文件路径
-            - parentNode: (object)新文件所在文件夹的节点数据,若在根节点下新建则parentNode为undefined(pId=0)
-            - newfile: (object)新建节点的数据
-            - newfilename: (string)新建节点名称(default:new file)
+            - parentFolder: (fileNode)新建文件所在文件夹的节点数据.若新建文件不存在上级目录，parentFolder=null
+            - newFile: (fileNode)新建文件的节点数据
             
 
     - 右键菜单 *Create Folder* 点击事件
     
-        addFolder: (parentNode,newfolder,newfoldername)=>{}
+        addFolder: (parentFolder,newfolder)=>{}
         
             参数说明：
-            - parentNode: (object)新建文件夹所在文件夹的节点数据,若在根节点下新建则parentNode为undefined(pI=0)
-            - newfolder: (object)新建文件夹的节点数据
-            - newfoldername: (string)新建文件夹名称(default:new folder)
-            
+            - parentFolder: (fileNode)新建文件夹所在文件夹的节点数据.若新建文件夹不存在上级目录，parentFolder=null
+            - newfolder: (fileNode)新建文件夹的节点数据
+
     - 右键菜单 *Rename* 点击事件
     
-        rename: (oldpath,node,oldname,newname)=>{}
+        rename: (beforeFile，afterFile)=>{}
     
             参数说明：
-            - oldpath: (string)重命名前的文件路径
-            - node: (object)重命名后的节点数据
-            - oldname: (string)重命名前节点名称
-            - newname: (string)重命名后节点名称
-         
+            - beforeFile: (fileNode)重命名前的文件节点数据
+            - afterFile: (fileNode)重命名后的文件节点数据
+
     - 右键菜单 *Delete* 点击事件
     
-        remove: (node)=>{}
+        remove: (fileNode)=>{}
     
             参数说明：
-            - node: (object)删除的节点
+            - fileNode: (fileNode)删除的节点数据
          
     - 点击文件树节点事件 
     
-        clickFile: (openedPath,treeNode)=>{}
+        clickFile: (fileNode)=>{}
         
             参数说明：
-            - openedPath: (string)点击的文件的路径
-            - treeNode: (object)点击的文件的节点数据
+            - fileNode: (fileNode)点击的文件的路径
 
 
 >**获取组件实例，调用zTree插件API**
@@ -92,72 +99,88 @@
 ## example
 ```js
 import * as React from 'react';
-import Ztree from 'bztree';
+import Ztree from 'bztree'
 
-const zNodes = [{ "id": 1, "pId": 0, "name": "pNode 1", "open": true },
-{ "id": 11, "pId": 1, "name": "pNode 11", },
-{ "id": 111, "pId": 11, "name": "sNode 111.js", },
-{ "id": 112, "pId": 11, "name": "sNode 112.html", },
-{ "id": 113, "pId": 11, "name": "sNode 113.css" },
-{ "id": 114, "pId": 11, "name": "sNode 114.json" },
-{ "id": 2, "pId": 0, "name": "pNode 3", "isParent":"true" },
-{ "id": 3, "pId": 0, "name": "index.js", },
-{ "id": 4, "pId": 0, "name": "package.json", }
-];
+function App() {
 
-export default class MySandpackProvider extends React.PureComponent<Props, State> {
-    constructor(props: Props) {
-        super(props);
-        this.ztree=React.createRef()
+    const filetree = [
+        {
+            filename: "pNode0 1",
+            isFolder: true,
+            filePath: "",
+            extend: true,
+            subdirectory: [
+                {
+                    filename: "pNode1 1",
+                    isFolder: true,
+                    filePath: "",
+                    extend: false,
+                    subdirectory: [
+                        {
+                            filename: "sNode11 1.js",
+                            isFolder: false,
+                            filePath: "",
+                        },
+                        {
+                            filename: "sNode11 2.html",
+                            isFolder: false,
+                            filePath: "",
+                        },
+                        {
+                            filename: "sNode11 3.css",
+                            isFolder: false,
+                            filePath: "",
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            filename: "pNode0 2",
+            isFolder: true,
+            filePath: "",
+            extend: false,
+            subdirectory: []
+        },
+        {
+            filename: "sNode0 3.js",
+            isFolder: false,
+            filePath: "",
+        }
+    ]
+
+    const configure = {
+    addFile: (parentFolder,newFile) => {
+      console.log("APP configure file _source", newFile)
+      console.log("APP configure parentNode是：", parentFolder)
+    },
+    addFolder: (parentFolder, newFolder) => {
+      console.log("APP configure folder _source", newFolder)
+      console.log("APP configure parentNode是：", parentFolder)
+    },
+    rename: (beforeFile,afterFile) => {
+      console.log("APP configure rename _source:", afterFile)
+      console.log("APP configure rename oldsource", beforeFile);
+    },
+    remove: (fileNode) => {
+      console.log("APP remove _source", fileNode);
+    },
+    clickFile: (fileNode) => {
+      console.log("APP clickFile _source", fileNode);
     }
-    
-    saveFiles = () => {
-        //获取zTree对象：this.ztree.current.ztreeObj
-        this.ztree.current.ztreeObj.cancelSelectedNode();
-        this.ztree.current.ztreeObj.selectNode(ele);
-    };
-    
+  };
 
-    render() {
-        const configure = {
-            addFile: (oldpath,parentNode, newfile, newfilename) => {
-                //新建文件事件
-                console.log("APP configure file parentNode", parentNode)
-                console.log("APP configure 新增file是：" , newfile)
-                console.log("APP configure 新增file的name是：" + newfilename)
-            },
-            addFolder: (parentNode, newfolder, newfoldername) => {
-                //新建文件夹事件
-                console.log("APP configure folder parentNode", parentNode)
-                console.log("APP configure 新增folder是：", newfolder)
-                console.log("APP configure 新增folder的name是：" + newfoldername)
-            },
-            rename: (oldpath,node, oldname, newname) => {
-                //重命名节点事件
-                console.log("APP configure rename node:", node)
-                console.log("APP configure rename:" + newname);
-                console.log("APP configure old name:" + oldname)
-            },
-            remove: (node) => {
-                //删除节点事件
-                console.log("APP remove", node);
-            },
-            clickFile: (openedPath, treeNode) => {
-                //点击文件事件
-                console.log("APP clickFile", treeNode);
-            }
-        };
-
-        return (
-            <div className='sandpack'>
-                <Ztree
-                    zNodes={zNodes}
-                    configure={configure}
-                    ref={this.ztree}
-                />
-            </div>
-        );
-    }
+    return (
+        <div className="App">
+            <Ztree
+                configure={configure}
+                filetree={filetree}
+            />
+        </div>
+    );
 }
+
+export default App;
+
 
 ```

@@ -136,7 +136,7 @@ import $ from 'jquery'
         onExpand: null,
         onCollapse: null,
         onRemove: null,
-        onRename:null
+        onRename: null
       }
     },
     //default root of core
@@ -341,7 +341,8 @@ import $ from 'jquery'
           return setFilePath(n, filepath)
         }
       };
-      n.path = setFilePath(n,[]);
+      n.path = setFilePath(n, []);
+      n._source.filePath = n.path;
 
       n.getParentNode = function () {
         return data.getNodeCache(setting, n.parentTId);
@@ -531,7 +532,7 @@ import $ from 'jquery'
         if (!node) return null;
 
         var path;
-        var filepath=[];
+        var filepath = [];
         if (node.parentTId) {
           path = node.getParentNode().getPath();
         } else {
@@ -1374,7 +1375,7 @@ import $ from 'jquery'
           "'");
         if (tools.apply(setting.view.showTitle, [setting.treeId, node], setting.view.showTitle) && title) {
           html.push("title='", node.path, "'");
-         
+
           //html.push("title='", title.replace(/'/g, "&#39;").replace(/</g, '&lt;').replace(/>/g, '&gt;'), "'");
         }
         html.push(">");
@@ -1394,7 +1395,7 @@ import $ from 'jquery'
         var nameStr = data.nodeName(setting, node),
           name = setting.view.nameIsHTML ? nameStr : nameStr.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         //得到文件类型
-        var FileType = name.split('.'),type;
+        var FileType = name.split('.'), type;
         if (!node.isAjaxing) {
           let isParent = data.nodeIsParent(setting, node);
           icoCss[0] = (node.iconSkin ? node.iconSkin + "_" : "") + icoCss[0];
@@ -1413,7 +1414,7 @@ import $ from 'jquery'
                 icoCss.push("text");
               } else if (consts.folder.TS.indexOf(type) > -1) { //typescript
                 icoCss.push("ts");
-              }else { //其他                       
+              } else { //其他                       
                 icoCss.push(type);
               }
             } else { //无后缀名文件
@@ -2092,7 +2093,8 @@ import $ from 'jquery'
                 return setFilePath(n, filepath)
               }
             }
-            node.path = setFilePath(node, [])
+            node.path = setFilePath(node, []);
+            node._source.filePath = node.path;
 
           }
         }
@@ -3588,7 +3590,7 @@ import $ from 'jquery'
         if (node) {
           var inputObj = root.curEditInput,
             newName = forceName ? forceName : (isCancel ? data.nodeName(setting, node) : inputObj.val());
-            //newName = inputObj.val()
+          //newName = inputObj.val()
           if (tools.apply(setting.callback.beforeRename, [setting.treeId, node, newName, isCancel], true) === false) {
             return false;
           }
@@ -3607,7 +3609,8 @@ import $ from 'jquery'
               return setFilePath(n, filepath)
             }
           }
-          node.path=setFilePath(node,[])
+          node.path = setFilePath(node, []);
+          node._source.filePath = node.path;
           view.setNodeName(setting, node);
           view.setNodeLineIcos(setting, node)
           node.editNameFlag = false;
@@ -3618,7 +3621,7 @@ import $ from 'jquery'
           //console.log("cancelCurEditNode:" + node.name)
         }
         root.noSelection = true;
-        
+
         return true;
       },
       editNode: function (setting, node) {
@@ -3634,8 +3637,8 @@ import $ from 'jquery'
         view.removeTreeDom(setting, node);
         view.cancelCurEditNode(setting);
         view.selectNode(setting, node, false);
-        
-        $$(node, consts.id.SPAN, setting).html("<input type=text class='rename' id='" + node.tId + consts.id.INPUT + "' treeNode" + consts.id.INPUT +"/>");
+
+        $$(node, consts.id.SPAN, setting).html("<input type=text class='rename' id='" + node.tId + consts.id.INPUT + "' treeNode" + consts.id.INPUT + "/>");
         var inputObj = $$(node, consts.id.INPUT, setting);
         //inputObj.attr("value", data.nodeName(setting, node));
         inputObj.attr("value", node.name);

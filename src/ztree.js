@@ -9,8 +9,31 @@ export default class ReactZtree extends PureComponent {
         super(props);
         this.ztree = React.createRef()
     }
-    componentDidMount(props) {
-        const _this = this
+    convert(filetree, zNodes, pId) {
+        filetree.forEach((filenode, index) => {
+            pId = pId ? pId : 0;
+            var zid = pId * 10 + index + 1;
+            filenode.id = zid;
+            zNodes.push({
+                id: zid,
+                pId: pId,
+                name: filenode.filename,
+                isParent: filenode.isFolder,
+                open: filenode.extend,
+                _source: filenode
+            })
+            if (filenode.isFolder) {
+                this.convert(filenode.subdirectory, zNodes, filenode.id)
+            }
+        });
+        return zNodes;
+    }
+
+    componentDidMount() {
+        const _this = this;
+        var zNodes = [];
+        const { filetree } = this.props
+        zNodes = _this.convert(filetree, zNodes);
         var setting = {
             view: {
                 dblClickExpand: false,
@@ -37,18 +60,16 @@ export default class ReactZtree extends PureComponent {
                 onRightClick: onRightClick,
             }
         }
-        var zTree = this.ztreeObj = $.fn.zTree.init($(this.ztree.current), setting, this.props.zNodes);
+
+        var zTree = this.ztreeObj = $.fn.zTree.init($(this.ztree.current), setting, zNodes);
         function onClick(e, treeId, treeNode) {
             zTree.expandNode(treeNode);
-            var openedPath = treeNode.path;
             const configure = _this.props.configure;
-            configure.clickFile && configure.clickFile(openedPath, treeNode)
-            // if (_this.props.clickFile) {
-            //     _this.props.clickFile(openedPath, treeNode)
-            // }
+            configure.clickFile && configure.clickFile(treeNode._source)
+            console.log("onClick", treeNode)
         }
         function onRightClick(event, treeId, treeNode) {
-            if (!treeNode && event.target.tagName.toLowerCase() !== "button" && $(event.target).parents("a").length === 0 ) {
+            if (!treeNode && event.target.tagName.toLowerCase() !== "button" && $(event.target).parents("a").length === 0) {
                 zTree.cancelSelectedNode();
                 showRMenu("root", event.clientX, event.clientY);
                 console.log(treeId)
@@ -86,13 +107,13 @@ export default class ReactZtree extends PureComponent {
         $("#m_addfolder").unbind('click').bind('click', addFolder);
         $("#m_rename").unbind('click').bind('click', rename);
         $("#m_del").unbind('click').bind('click', remove);
-       
-        function addFile (parentNode, newfilename) {
+
+        function addFile(parentNode, newfilename) {
             hideRMenu();
             const configure = _this.props.configure;
             newfilename = "new file";
             //var count = 0;
-            var newparentNode;
+            //var newparentNode;
             parentNode = zTree.getSelectedNodes()[0];
             var newId;
             if (parentNode) {
@@ -107,7 +128,12 @@ export default class ReactZtree extends PureComponent {
                     isParent: false,
                     name: newfilename
                 }
-                newparentNode = zTree.addNodes(parentNode, newfile);
+                newfile._source = {
+                    id: newfile.id,
+                    filename: newfile.name,
+                    isFolder: false,
+                }
+                parentNode = zTree.addNodes(parentNode, newfile);
             } else {
                 var parentNodes = zTree.getNodes(); //可以获取所有的父节点
                 newfile = {
@@ -116,20 +142,28 @@ export default class ReactZtree extends PureComponent {
                     isParent: false,
                     name: newfilename
                 }
-                newparentNode = zTree.addNodes(null, newfile)
+                newfile._source = {
+                    id: newfile.id,
+                    filename: newfile.name,
+                    isFolder: false,
+                }
+                parentNode = zTree.addNodes(null, newfile)
             }
-            
-            if (newparentNode) {
-                const oldpath = newparentNode[0].path;
-                var inputObj = _this.editName(newparentNode[0])
-                
+
+            if (parentNode) {
+                newfile = parentNode[0];
+                const oldpath = newfile.path;
+                var inputObj = _this.editName(newfile)
+
                 inputObj.bind('blur', function (event) {
-                    newfilename = newparentNode[0].name = $(this).val();
-                    _this.exeConfigureAddFile(parentNode, newparentNode[0], oldpath, newfilename, configure)
+                    newfilename = newfile.name = $(this).val();
+                    newfile._source.filename = newfilename;
+                    _this.exeConfigureAddFile($(this), parentNode, newfile, oldpath, configure)
                 }).bind('keydown', function (event) {
                     if (event.keyCode === 13 || event.keyCode === 27) {
-                        newfilename = newparentNode[0].name = $(this).val();
-                        _this.exeConfigureAddFile(parentNode, newparentNode[0], oldpath, newfilename, configure)
+                        newfilename = newfile.name = $(this).val();
+                        newfile._source.filename = newfilename;
+                        _this.exeConfigureAddFile($(this), parentNode, newfile, oldpath, configure)
                     }
                 }).bind('click', function (event) {
                     return false;
@@ -138,26 +172,33 @@ export default class ReactZtree extends PureComponent {
                 });
             }
         }
-        function addFolder(node, newfoldername){
+        function addFolder(parentNode) {
             hideRMenu();
             const configure = _this.props.configure;
             var newfolder;
-            newfoldername = "new folder"
-            node = zTree.getSelectedNodes()[0];
+            var newfoldername = "new folder"
+            parentNode = zTree.getSelectedNodes()[0];
             var newId;
-            if (node) {  //选中节点下新建
-                if (node.check_Child_State < 0) {//空文件夹中新建
-                    newId = node.id * 10 + 1;
+            if (parentNode) {  //选中节点下新建
+                if (parentNode.check_Child_State < 0) {//空文件夹中新建
+                    newId = parentNode.id * 10 + 1;
                 } else {
-                    newId = node.id * 10 + node.children.length + 1;
+                    newId = parentNode.id * 10 + parentNode.children.length + 1;
                 }
                 newfolder = {
                     id: newId,
-                    pId: node.id,
+                    pId: parentNode.id,
                     isParent: true,
                     name: newfoldername
                 }
-                var newparentnode = zTree.addNodes(node, newfolder);
+                newfolder._source = {
+                    id: newfolder.id,
+                    filename: newfolder.name,
+                    isFolder: true,
+                    entend: false,
+                    subdirectory: []
+                }
+                parentNode = zTree.addNodes(parentNode, newfolder);
             } else { //根目录下新建
                 var nodes = zTree.getNodes(); //可以获取所有的父节点
                 newfolder = {
@@ -166,35 +207,55 @@ export default class ReactZtree extends PureComponent {
                     isParent: true,
                     name: newfoldername
                 }
-                newparentnode = zTree.addNodes(null, newfolder);
+                newfolder._source = {
+                    id: newfolder.id,
+                    filename: newfolder.name,
+                    isFolder: true,
+                    entend: false,
+                    subdirectory: []
+                }
+                parentNode = zTree.addNodes(null, newfolder);
             }
-            if (newparentnode) {
-                var inputObj = _this.editName(newparentnode[0])
+            if (parentNode) {
+                newfolder = parentNode[0];
+                var inputObj = _this.editName(newfolder)
 
                 inputObj.bind('blur', function (event) {
-                    newfoldername = newparentnode[0].name = $(this).val();
+                    newfoldername = newfolder.name = $(this).val();
                     if (newfoldername.length === 0) {
-                            alert("名字不能为空！");
-                            return false;
+                        alert("名字不能为空！");
+
+                        $(this).focus()
+                        return false;
                     }
-                    newparentnode[0].path = _this.setFilePath(newparentnode[0], [])
-                    configure.addFolder && configure.addFolder(node, newparentnode[0], newfoldername)
+                    newfolder.path = _this.setFilePath(newfolder, []);
+                    newfolder._source.filePath = newfolder.path;
+                    newfolder._source.filename = newfolder.name;
+                    parentNode = newfolder.getParentNode();
+                    if (parentNode) {
+                        parentNode._source.subdirectory.push(newfolder._source);
+                    }
+                    configure.addFolder && configure.addFolder(parentNode, newfolder._source)
                     $(this).hide()
                     $(this).parent().html(newfoldername)
-                    console.log("ztree AddFolder1", newparentnode)
                 }).bind('keydown', function (event) {
                     if (event.keyCode === 13 || event.keyCode === 27) {
-                        newfoldername = newparentnode[0].name = $(this).val();
+                        newfoldername = newfolder.name = $(this).val();
                         if (newfoldername.length === 0) {
                             alert("名字不能为空！");
+                            $(this).focus()
                             return false;
                         }
-                        newparentnode[0].path = _this.setFilePath(newparentnode[0], [])
-                        configure.addFolder && configure.addFolder(node, newparentnode[0], newfoldername)
+                        newfolder.path = _this.setFilePath(newfolder, [])
+                        newfolder._source.filePath = newfolder.path;
+                        newfolder._source.filename = newfolder.name;
+                        parentNode = newfolder.getParentNode();
+                        if (parentNode) {
+                            parentNode._source.subdirectory.push(newfolder._source);
+                        }
+                        configure.addFolder && configure.addFolder(parentNode, newfolder._source)
                         $(this).hide()
                         $(this).parent().html(newfoldername)
-                        console.log("ztree AddFolder2", newparentnode[0])
-                       
                     }
                 }).bind('click', function (event) {
                     return false;
@@ -203,58 +264,47 @@ export default class ReactZtree extends PureComponent {
                 });
             }
         }
-        function rename(event,oldname, newname) {
+        function rename(event, oldname, newname) {
             hideRMenu();
             const configure = _this.props.configure;
-            
+
             var node = zTree.getSelectedNodes()[0];
+            const oldsource = { ...node._source };
+
             const oldpath = node.path;
             oldname = node.name;
 
             var inputObj = _this.editName(node);
             inputObj.bind('blur', function (event) {
                 newname = node.name = $(this).val();
-                _this.exeConfigureRename(node, oldpath, oldname, newname, configure)
+                _this.exeConfigureRename($(this), oldsource, node, oldpath, oldname, configure)
 
-        }).bind('keydown', function (event) {
-            if (event.keyCode === 13 || event.keyCode === 27) {
-                newname = node.name = $(this).val();
-                _this.exeConfigureRename(node, oldpath, oldname, newname, configure)
-            }
-        }).bind('click', function (event) {
-            return false;
-        }).bind('dblclick', function (event) {
-            return false;
-        });
-                   
+            }).bind('keydown', function (event) {
+                if (event.keyCode === 13 || event.keyCode === 27) {
+                    newname = node.name = $(this).val();
+                    _this.exeConfigureRename($(this), oldsource, node, oldpath, oldname, configure)
+                }
+            }).bind('click', function (event) {
+                
+                return false;
+            }).bind('dblclick', function (event) {
+                return false;
+            });
+
         }
 
-        function remove(node){
+        function remove(node) {
             hideRMenu();
             const configure = _this.props.configure;
             node = zTree.getSelectedNodes()[0];
             zTree.removeNode(node);
-            // var removefolder = (node) => {
-            //     let children = node.children;
-            //     children.forEach((element) => {
-            //         if (element.isParent){
-            //             return removefolder(element)
-            //         } else {
-            //             _this.props.remove(element);
-            //         }
-            //     });
-            // }
-            // if (node.isParent) {
-            //     removefolder(node);
-            // } else {
-            //     _this.props.remove(node);
-            // }
-            configure.remove && configure.remove(node)
-            
-            console.log("function remove(node)",node)
+            configure.remove && configure.remove(node._source)
+            // configure.remove && configure.remove(node)
+
+            console.log("function remove(node)", node)
         }
     }
-    setFilePath(n, filepath)  {
+    setFilePath(n, filepath) {
         var pId = n.parentTId;
         if (pId === null) {
             filepath.unshift('/' + n.name)
@@ -265,37 +315,34 @@ export default class ReactZtree extends PureComponent {
             return this.setFilePath(n, filepath)
         }
     }
-    exeConfigureAddFile (parentNode, newfile, oldpath, newfilename, configure) {
-        if (newfilename.length === 0) {
+    exeConfigureAddFile(input, parentNode, newfile, oldpath, configure) {
+        if (newfile.name.length === 0) {
             alert("名字不能为空！");
+            input.focus()
             return false;
         }
         this.ztreeObj.updateNode(newfile);
-        // this.props.reset(oldpath, newfile);
-        configure.addFile && configure.addFile(oldpath,parentNode, newfile, newfilename)
-        // this.props.addTab(newfile);
-    }
-    exeConfigureAddFolder (newparentnode, newfoldername, configure) {
-        
-        if (newfoldername.length === 0) {
-            alert("名字不能为空！");
-            return false;
+        parentNode = newfile.getParentNode();
+        if (parentNode) {
+            parentNode._source.subdirectory.push(newfile._source);
         }
-
-        newparentnode[0].path = this.setFilePath(newparentnode[0], [])
-        configure.addFolder && configure.addFolder(newparentnode, newparentnode[0], newfoldername)
+        configure.addFile && configure.addFile(parentNode, newfile._source)
+        // configure.addFile && configure.addFile(oldpath, parentNode, newfile, newfilename)
     }
-    exeConfigureRename (node,oldpath,oldname,newname,configure) {
-        if (newname.length === 0) {
+    exeConfigureRename(input, oldsource, node, oldpath, oldname, configure) {
+        if (node.name.length === 0) {
             alert("名字不能为空！");
+            input.focus()
             return false;
         }
         this.ztreeObj.updateNode(node);
-        // this.props.reset(oldpath, node);
-        configure.rename && configure.rename(oldpath,node, oldname, newname)   
+        // node._source.filename = node.name;
+        // node._source.filePath = node.path;
+        configure.rename && configure.rename(oldsource, node._source)
+        // configure.rename && configure.rename(oldpath, node, oldname, newname)
 
     }
-    editName (node) {
+    editName(node) {
         this.ztreeObj.cancelSelectedNode()
 
         $("#" + node.tId + "_span").html("<input type=text class='rename' id='" + node.tId + "input' treeNodeinput/>");
@@ -303,7 +350,7 @@ export default class ReactZtree extends PureComponent {
         inputObj.click(function () { return false; });
         inputObj.attr("value", node.name);
         inputObj.focus();
-        inputObj.select(); 
+        inputObj.select();
         return inputObj;
     }
     componentWillUnmount() {
