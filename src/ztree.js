@@ -273,8 +273,8 @@ export default class ReactZtree extends PureComponent {
             const configure = _this.props.configure;
 
             var node = zTree.getSelectedNodes()[0];
-            const oldsource = { ...node._source };
-
+            //const oldsource = { ...node._source };
+            var oldsource = $.extend({}, node._source);
             const oldpath = node.path;
             oldname = node.name;
 
