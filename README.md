@@ -83,7 +83,7 @@
         clickFile: (fileNode)=>{}
         
             参数说明：
-            - fileNode: (object)点击的文件的路径
+            - fileNode: (object)点击的文件节点数据
 
 
 >**id**
