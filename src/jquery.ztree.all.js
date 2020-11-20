@@ -343,6 +343,8 @@ import $ from 'jquery'
       };
       n.path = setFilePath(n, []);
       n._source.filePath = n.path;
+      n._source.tId = n.tId;
+      n._source.pTId = n.parentTId;
 
       n.getParentNode = function () {
         return data.getNodeCache(setting, n.parentTId);
@@ -2094,8 +2096,10 @@ import $ from 'jquery'
               }
             }
             node.path = setFilePath(node, []);
+            node._source.filename = node.name;
             node._source.filePath = node.path;
-
+            node._source.tId = node.tId;
+            node._source.pTId = node.parentTId;
           }
         }
       };
@@ -3611,6 +3615,8 @@ import $ from 'jquery'
           }
           node.path = setFilePath(node, []);
           node._source.filePath = node.path;
+          node._source.tId = node.tId;
+          node._source.pTId = node.parentTId;
           view.setNodeName(setting, node);
           view.setNodeLineIcos(setting, node)
           node.editNameFlag = false;
