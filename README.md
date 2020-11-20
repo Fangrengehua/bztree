@@ -86,7 +86,7 @@
             - fileNode: (object)点击的文件节点数据
 
 
->**id**
+>**可选项：id**
 
     指定文件树id，生成文件tId前缀，用于标识文件所属文件树。(default:filetree)
 
