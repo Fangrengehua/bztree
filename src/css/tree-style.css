@@ -7,6 +7,7 @@ email:      hunter.z@263.net
 website:    http://code.google.com/p/jquerytree/
 
 -------------------------------------*/
+
 /* right click menu */
 #rMenu{
     position: absolute;
@@ -40,6 +41,15 @@ website:    http://code.google.com/p/jquerytree/
 	width: 350px;
 	height: 100%;
 	background-color:  #f5f5f5;
+}
+
+#input-warning{
+	display: block;
+	position:absolute;
+	margin: -2px 0;
+	padding:5px;
+	color: #f5f5f5;
+	background: #da4242;
 }
 .ztree * {
 	padding: 0;
@@ -116,7 +126,7 @@ website:    http://code.google.com/p/jquerytree/
 	filter: alpha(opacity=80);
 }
 /* 重命名编辑框样式 */
-.ztree li a input .rename{
+.ztree li a input.rename{
   height: 14px;
   width: 80px;
   padding: 0;

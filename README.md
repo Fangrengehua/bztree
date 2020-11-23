@@ -13,17 +13,13 @@
 
     属性|类型|备注
     -|-|-|
-    tId|string|文件唯一标识:"文件树id_number"(组件内部生成 eg:filetree_1)
-    pTId|string|文件父节点tId(组件内部生成)
-    filePath|string|绝对路径(组件内部生成)
     filename|string|文件名(用户指定)
-    isFolder|bool|是否为文件夹(用户指定)
-    extend|bool|是否展开文件夹(用户指定)
-    subdirectory|fileNode数组|子文件目录(用户指定)
+    isFolder|bool|是否为文件夹(用户指定,default:false)
+    extend|bool|是否展开文件夹(用户指定,default:false)
+    subdirectory|fileNode数组|子文件目录(用户指定,default:[])
     
     示例:
 
-        
         const filetree = [
         {
             filename: "pNode0 1",
@@ -46,13 +42,20 @@
         
 2. **configure: 相关事件配置**
 
+    - error: (bool，default:false)是否执行用户自定义的错误处理回调，为true时请务必定义errorCallBack回调函数。
+
+    - errorCallBack:()=>{}
+    用户自定义错误处理回调函数
+
     - 右键菜单 *Create File* 点击事件
     
         addFile: (parentFolder, newFile)=>{}
     
             参数说明：
-            - parentFolder: (object)新建文件所在文件夹的节点数据.若新建文件不存在上级目录，parentFolder=null
-            - newFile: (object)新建文件的节点数据,默认文件名为"new file"
+            - parentFolder: (fileNode)新建文件所在文件夹的节点数据.若新建文件不存在上级目录，parentFolder=null
+            - newFile: (fileNode)新建文件的节点数据,默认文件名为"new file"
+            
+            返回值：promise
             
 
     - 右键菜单 *Create Folder* 点击事件
@@ -60,30 +63,38 @@
         addFolder: (parentFolder,newfolder)=>{}
         
             参数说明：
-            - parentFolder: (object)新建文件夹所在文件夹的节点数据.若新建文件夹不存在上级目录，parentFolder=null
-            - newfolder: (object)新建文件夹的节点数据,默认文件名为"new folder"
+            - parentFolder: (fileNode)新建文件夹所在文件夹的节点数据.若新建文件夹不存在上级目录，parentFolder=null
+            - newfolder: (fileNode)新建文件夹的节点数据,默认文件名为"new folder"
+            
+            返回值：promise
 
     - 右键菜单 *Rename* 点击事件
     
         rename: (beforeFile，afterFile)=>{}
     
             参数说明：
-            - beforeFile: (object)重命名前的文件节点数据
-            - afterFile: (object)重命名后的文件节点数据
+            - beforeFile: (fileNode)重命名前的文件节点数据
+            - afterFile: (fileNode)重命名后的文件节点数据
+            
+            返回值：promise
 
     - 右键菜单 *Delete* 点击事件
     
         remove: (fileNode)=>{}
     
             参数说明：
-            - fileNode: (object)删除的节点数据
+            - fileNode: (fileNode)删除的节点数据
+            
+            返回值：promise
          
     - 点击文件树节点事件 
     
         clickFile: (fileNode)=>{}
         
             参数说明：
-            - fileNode: (object)点击的文件节点数据
+            - fileNode: (fileNode)点击的文件节点数据
+            
+            返回值：promise
 
 
 >**可选项：id**
@@ -104,7 +115,6 @@ import * as React from 'react';
 import Ztree from 'bztree'
 
 function App() {
-
     const filetree = [
         {
             filename: "pNode0 1",
@@ -144,26 +154,86 @@ function App() {
         }
     ]
 
+
     const configure = {
-    addFile: (parentFolder,newFile) => {
-      console.log("APP configure newFile", newFile)
-      console.log("APP configure parentNode是：", parentFolder)
-    },
-    addFolder: (parentFolder, newFolder) => {
-      console.log("APP configure newFolder", newFolder)
-      console.log("APP configure parentNode是：", parentFolder)
-    },
-    rename: (beforeFile,afterFile) => {
-      console.log("APP configure after rename:", afterFile)
-      console.log("APP configure before rename:", beforeFile);
-    },
-    remove: (fileNode) => {
-      console.log("APP remove fileNode", fileNode);
-    },
-    clickFile: (fileNode) => {
-      console.log("APP clickFile fileNode", fileNode);
-    }
-  };
+        error: false,
+        errorCallBack: () => {
+            console.log("error");
+        },
+        addFile: (parentFolder, newFile) => {
+            console.log("APP configure file _source", newFile)
+            console.log("APP configure parentNode是：", parentFolder)
+
+            return new Promise((resolve, reject) => {
+                let num = Math.round(Math.random() * 10);
+                if (num % 2 === 0) {
+                    console.log(num);
+                    resolve();
+                } else {
+                    console.log(num);
+                    reject();
+                }
+            })
+        },
+        addFolder: (parentFolder, newFolder) => {
+            console.log("APP configure folder _source", newFolder)
+            console.log("APP configure parentNode是：", parentFolder)
+
+            return new Promise((resolve, reject) => {
+                let num = Math.round(Math.random() * 10);
+                if (num % 2 === 0) {
+                    console.log(num);
+                    resolve();
+                } else {
+                    console.log(num);
+                    reject();
+                }
+            })
+        },
+        rename: (beforeFile, afterFile) => {
+            console.log("APP configure rename _source:", afterFile)
+            console.log("APP configure rename oldsource", beforeFile);
+
+            return new Promise((resolve, reject) => {
+                let num = Math.round(Math.random() * 10);
+                if (num % 2 === 0) {
+                    console.log(num);
+                    resolve();
+                } else {
+                    console.log(num);
+                    reject();
+                }
+            })
+        },
+        remove: (fileNode) => {
+            console.log("APP remove _source", fileNode);
+
+            return new Promise((resolve, reject) => {
+                let num = Math.round(Math.random() * 10);
+                if (num % 2 === 0) {
+                    console.log(num);
+                    resolve();
+                } else {
+                    console.log(num);
+                    reject();
+                }
+            })
+        },
+        clickFile: (fileNode) => {
+            console.log("APP clickFile _source", fileNode);
+
+            return new Promise((resolve, reject) => {
+                let num = Math.round(Math.random() * 10);
+                if (num % 2 === 0) {
+                    console.log(num);
+                    resolve();
+                } else {
+                    console.log(num);
+                    reject();
+                }
+            })
+        }
+    };
 
     return (
         <div className="App">
@@ -177,6 +247,5 @@ function App() {
 }
 
 export default App;
-
 
 ```
