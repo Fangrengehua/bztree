@@ -166,7 +166,7 @@ export default class ReactZtree extends PureComponent {
             if (parentNode) {
                 newfile = parentNode[0];
                 _this.editName(newfile, (inputval) => {
-                    var fileobj = _this.exeConfigureAddFile(inputval, newfile)
+                    var fileobj = _this.exeConfigureAdd(inputval, newfile)
                     let result = configure.addFile(fileobj.parentFolder, fileobj.newfile._source)
                     result.then(null,
                         () => {
@@ -184,8 +184,8 @@ export default class ReactZtree extends PureComponent {
         function addFolder(parentNode) {
             hideRMenu();
             const configure = _this.props.configure;
-            var newfolder;
-            var newfoldername = "new folder" + foldercount++
+            var newfile;
+            var newfilename = "new folder" + foldercount++
             parentNode = zTree.getSelectedNodes()[0];
             var newId;
             if (parentNode) {  //选中节点下新建
@@ -195,52 +195,52 @@ export default class ReactZtree extends PureComponent {
                     let parentLastChildId = parentNode.children[parentNode.children.length - 1].id
                     newId = parentLastChildId + 1;
                 }
-                newfolder = {
+                newfile = {
                     id: newId,
                     pId: parentNode.id,
                     isParent: true,
-                    name: newfoldername
+                    name: newfilename
                 }
-                newfolder._source = {
-                    id: newfolder.id,
-                    tId: newfolder.tId,
-                    pTId: newfolder.parentTId,
-                    filename: newfolder.name,
+                newfile._source = {
+                    id: newfile.id,
+                    tId: newfile.tId,
+                    pTId: newfile.parentTId,
+                    filename: newfile.name,
                     isFolder: true,
                     entend: false,
                     subdirectory: []
                 }
-                parentNode = zTree.addNodes(parentNode, newfolder);
+                parentNode = zTree.addNodes(parentNode, newfile);
             } else { //根目录下新建
                 var nodes = zTree.getNodes(); //可以获取所有的父节点
-                newfolder = {
+                newfile = {
                     id: nodes.length + 1,
                     pId: 0,
                     isParent: true,
-                    name: newfoldername
+                    name: newfilename
                 }
-                newfolder._source = {
-                    id: newfolder.id,
-                    tId: newfolder.tId,
-                    pTId: newfolder.parentTId,
-                    filename: newfolder.name,
+                newfile._source = {
+                    id: newfile.id,
+                    tId: newfile.tId,
+                    pTId: newfile.parentTId,
+                    filename: newfile.name,
                     isFolder: true,
                     entend: false,
                     subdirectory: []
                 }
-                parentNode = zTree.addNodes(null, newfolder);
+                parentNode = zTree.addNodes(null, newfile);
             }
             if (parentNode) {
-                newfolder = parentNode[0];
+                newfile = parentNode[0];
                 _this.editName(newfolder, (inputval) => {
-                    var fileobj = _this.exeConfigureAddFolder(inputval, newfolder)
-                    let result = configure.addFolder(fileobj.parentFolder, fileobj.newfolder._source);
+                    var fileobj = _this.exeConfigureAdd(inputval, newfile)
+                    let result = configure.addFolder(fileobj.parentFolder, fileobj.newfile._source);
                     result.then(null, () => {
                         if (configure.error) {
                             configure.errorCallBack ? configure.errorCallBack() : console.log("errorCallBack is undefined")
                         }
-                        _this.removeFilefromParent(fileobj.newfolder)
-                        zTree.removeNode(fileobj.newfolder);
+                        _this.removeFilefromParent(fileobj.newfile)
+                        zTree.removeNode(fileobj.newfile);
                         console.log("用户addFolder执行失败")
                     })
                 });
@@ -287,9 +287,8 @@ export default class ReactZtree extends PureComponent {
                 })
         }
     }
-    exeConfigureAddFile(inputval, newfile) {
+    exeConfigureAdd(inputval, newfile) {
         newfile.name = inputval;
-        //newfile._source.filename = inputval;
         var parentFolder = null;
         var parentNode = newfile.getParentNode();
         if (parentNode) {
@@ -299,22 +298,6 @@ export default class ReactZtree extends PureComponent {
         }
         this.ztreeObj.updateNode(newfile);
         return { newfile, parentFolder }
-        // configure.addFile && configure.addFile(parentFolder, newfile._source)
-
-    }
-    exeConfigureAddFolder(inputval, newfolder) {
-        newfolder.name = inputval;
-        var parentFolder = null;
-        var parentNode = newfolder.getParentNode();
-        if (parentNode) {
-            parentNode._source.subdirectory.push(newfolder._source);
-            this.repairUpdirectory(parentNode);
-            parentFolder = parentNode._source;
-        }
-        this.ztreeObj.updateNode(newfolder);
-        return { newfolder, parentFolder }
-        //configure.addFolder && configure.addFolder(parentFolder, newfolder._source)
-
     }
     exeConfigureRename(inputval, oldsource, node) {
         node.name = inputval;
