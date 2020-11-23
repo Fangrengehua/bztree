@@ -1,4 +1,4 @@
-# file-tree安装和使用
+# file-ztree安装和使用
 
 ## Installation 
  `npm install file-tree`
@@ -113,7 +113,7 @@
 ## example
 ```js
 import * as React from 'react';
-import Ztree from 'file-tree'
+import Ztree from 'file-ztree'
 
 function App() {
     const filetree = [
