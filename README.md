@@ -1,7 +1,7 @@
-# bztree安装和使用
+# file-tree安装和使用
 
 ## Installation 
- `npm install bztree`
+ `npm install file-tree`
 
 ## 配置和API
 
@@ -18,6 +18,7 @@
     extend|bool|是否展开文件夹(用户指定,default:false)
     subdirectory|fileNode数组|子文件目录(用户指定,default:[])
     
+
     示例:
 
         const filetree = [
@@ -112,7 +113,7 @@
 ## example
 ```js
 import * as React from 'react';
-import Ztree from 'bztree'
+import Ztree from 'file-tree'
 
 function App() {
     const filetree = [

@@ -1,6 +1,6 @@
 {
-  "name": "bztree",
-  "version": "1.0.8",
+  "name": "file-tree",
+  "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "dependencies": {

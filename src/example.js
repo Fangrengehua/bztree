@@ -1,5 +1,5 @@
+//import Ztree from './ztree/test/ztree1'
 import Ztree from 'bztree'
-
 function App() {
     const filetree = [
         {
@@ -51,6 +51,7 @@ function App() {
             console.log("APP configure parentNode是：", parentFolder)
 
             return new Promise((resolve, reject) => {
+
                 let num = Math.round(Math.random() * 10);
                 if (num % 2 === 0) {
                     console.log(num);
@@ -81,14 +82,17 @@ function App() {
             console.log("APP configure rename oldsource", beforeFile);
 
             return new Promise((resolve, reject) => {
-                let num = Math.round(Math.random() * 10);
-                if (num % 2 === 0) {
-                    console.log(num);
-                    resolve();
-                } else {
-                    console.log(num);
-                    reject();
-                }
+                setTimeout(() => {
+                    reject()
+                }, 1000)
+                // let num = Math.round(Math.random() * 10);
+                // if (num % 2 === 0) {
+                //   console.log(num);
+                //   resolve();
+                // } else {
+                //   console.log(num);
+                //   reject();
+                // }
             })
         },
         remove: (fileNode) => {

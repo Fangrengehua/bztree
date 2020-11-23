@@ -254,7 +254,8 @@ export default class ReactZtree extends PureComponent {
             //const oldsource = { ...node._source };
             var oldsource = $.extend({}, node._source); //jquery深拷贝
             oldname = node.name;
-            _this.editName(node, async (inputval) => {
+
+            _this.editName(node, (inputval) => {
                 _this.exeConfigureRename(inputval, oldsource, node);
                 let result = configure.rename(oldsource, node._source);
                 result.then(null, () => {
@@ -266,7 +267,6 @@ export default class ReactZtree extends PureComponent {
                     console.log("用户rename执行失败")
                 })
             })
-
         }
         function remove(node) {
             hideRMenu();
@@ -286,22 +286,6 @@ export default class ReactZtree extends PureComponent {
                     console.log("用户remove执行失败");
                 })
         }
-    }
-    exeConfigureAdd(inputval, newfile) {
-        newfile.name = inputval;
-        //newfile._source.filename = inputval;
-
-        var parentFolder = null;
-        var parentNode = newfile.getParentNode();
-        if (parentNode) {
-            parentNode._source.subdirectory.push(newfile._source);
-            this.repairUpdirectory(parentNode)
-            parentFolder = parentNode._source;
-        }
-        this.ztreeObj.updateNode(newfile);
-        return { newfile, parentFolder }
-        // configure.addFile && configure.addFile(parentFolder, newfile._source)
-
     }
     exeConfigureAddFile(inputval, newfile) {
         newfile.name = inputval;
@@ -386,7 +370,7 @@ export default class ReactZtree extends PureComponent {
             this.repairUpdirectory(parentNode);
         }
     }
-    checkName(inputval, treeNode) { //重命名检查bug
+    checkName(inputval, treeNode) { //重命名检查
         var reason = null;
         var parentNode = treeNode.getParentNode(); //父树节点
         if (inputval.length === 0) {  //文件名为空
@@ -435,19 +419,19 @@ export default class ReactZtree extends PureComponent {
                 $("<div id='input-warning'>" + reason + "</div>").css({
                     top: y + 18 + 'px',
                     left: x + "px",
-                }).appendTo('#' + node.tId + "_span");
+                }).appendTo('#' + node.tId + "_span");//追加到body内
                 inputObj.focus();
                 check = false;
-                return false;
+                //return false;
             }
         })
         inputObj.bind('blur', function (event) {
             var inputval = inputObj.val();
-
             if (!check) {
                 inputval = node.name;
             }
             cb(inputval);
+            //return inputval;
 
         }).bind('keydown', function (event) {
             var inputval = inputObj.val();
@@ -456,6 +440,7 @@ export default class ReactZtree extends PureComponent {
                     inputval = node.name;
                 }
                 cb(inputval);
+                //return inputval;
             }
         }).bind('click', function (event) {
             return false;
@@ -474,10 +459,10 @@ export default class ReactZtree extends PureComponent {
                 <div id={id} className="ztree" ref={this.ztree}></div>
                 <div id="rMenu">
                     <ul className="menu">
-                        <li id="m_addfile" className='item'>Create File</li>
-                        <li id="m_addfolder" className='item'>Create Folder</li>
-                        <li id="m_rename" className='item'>Rename</li>
-                        <li id="m_del" className='item'>Delete</li>
+                        <li id="m_addfile" className='item'>新建文件</li>
+                        <li id="m_addfolder" className='item'>新建文件夹</li>
+                        <li id="m_rename" className='item'>重命名</li>
+                        <li id="m_del" className='item'>删除</li>
                     </ul>
                 </div>
             </div>
