@@ -1,7 +1,7 @@
 # file-ztree安装和使用
 
 ## Installation 
- `npm install file-tree`
+ `npm install file-ztree`
 
 ## 配置和API
 
