@@ -1,5 +1,4 @@
-//import Ztree from './ztree/test/ztree1'
-import Ztree from 'bztree'
+import Ztree from 'file-ztree'
 function App() {
     const filetree = [
         {

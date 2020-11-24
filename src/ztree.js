@@ -7,6 +7,12 @@ import '../src/css/icon.css'
 export default class ReactZtree extends PureComponent {
     constructor(props) {
         super(props);
+        this.state = {
+            menuvisibility: 'hidden',
+            menuX: 0,
+            menuY: 0,
+            itemclassName: 'item',
+        }
         this.ztree = React.createRef()
     }
     convert(filetree, zNodes, pId) {
@@ -36,10 +42,8 @@ export default class ReactZtree extends PureComponent {
 
     componentDidMount() {
         const _this = this;
-        var zNodes = [];
         const { filetree } = this.props
-        zNodes = _this.convert(filetree, zNodes);
-        var setting = {
+        const setting = {
             view: {
                 dblClickExpand: false,
                 selectedMulti: true,
@@ -65,7 +69,9 @@ export default class ReactZtree extends PureComponent {
                 onRightClick: onRightClick,
             }
         }
-
+        var zNodes = [];
+        zNodes = this.convert(filetree, zNodes);
+        //初始化文件树
         var zTree = this.ztreeObj = $.fn.zTree.init($(this.ztree.current), setting, zNodes);
         function onRightClick(event, treeId, treeNode) {
             if (!treeNode && event.target.tagName.toLowerCase() !== "button" && $(event.target).parents("a").length === 0) {
@@ -76,30 +82,30 @@ export default class ReactZtree extends PureComponent {
                 zTree.selectNode(treeNode);
                 showRMenu("node", event.clientX, event.clientY);
             }
-            //console.log("onRightClick:"+treeNode.name)
+
         }
         function showRMenu(type, x, y) { //type决定menu菜单内容，x,y决定menu显示位置
-            $("#rMenu ul").show();
             if (type === "root") {
-                $("#m_del").unbind('click', remove).css('color', '#cfcfcf').removeClass('item');
-                $("#m_rename").unbind('click', rename).css('color', '#cfcfcf').removeClass('item');
+                $("#m_del").unbind('click', remove)
+                $("#m_rename").unbind('click', rename)
+                _this.setState({ itemclassName: 'falseitem' })
             } else {
-                $("#m_del").unbind('click').bind('click', remove).removeAttr("style").addClass('item');
-                $("#m_rename").unbind('click').bind('click', rename).removeAttr("style").addClass('item');
+                $("#m_del").unbind('click').bind('click', remove)
+                $("#m_rename").unbind('click').bind('click', rename)
+                _this.setState({ itemclassName: 'item' })
             }
             y += document.body.scrollTop;
             x += document.body.scrollLeft;
-            $('#rMenu').css({ "top": y + "px", "left": x + "px", "visibility": "visible" });
-
+            _this.setState({ menuvisibility: 'visible', menuX: x, menuY: y })
             $("body").bind("mousedown", onBodyMouseDown);
         }
         function onBodyMouseDown(event, node) {
             if (!(event.target.id === "rMenu" || $(event.target).parents("#rMenu").length > 0)) {
-                $('#rMenu').css({ "visibility": "hidden" });
+                _this.setState({ menuvisibility: 'hidden' })
             }
         }
         function hideRMenu() {
-            if ($('#rMenu')) $('#rMenu').css({ "visibility": "hidden" });
+            if (_this.setState({ menuvisibility: 'hidden' }));
             $("body").unbind("mousedown", onBodyMouseDown);
         }
         $("#m_addfile").unbind('click').bind('click', addFile);
@@ -232,7 +238,7 @@ export default class ReactZtree extends PureComponent {
             }
             if (parentNode) {
                 newfile = parentNode[0];
-                _this.editName(newfolder, (inputval) => {
+                _this.editName(newfile, (inputval) => {
                     var fileobj = _this.exeConfigureAdd(inputval, newfile)
                     let result = configure.addFolder(fileobj.parentFolder, fileobj.newfile._source);
                     result.then(null, () => {
@@ -289,6 +295,7 @@ export default class ReactZtree extends PureComponent {
     }
     exeConfigureAdd(inputval, newfile) {
         newfile.name = inputval;
+        //newfile._source.filename = inputval;
         var parentFolder = null;
         var parentNode = newfile.getParentNode();
         if (parentNode) {
@@ -298,6 +305,8 @@ export default class ReactZtree extends PureComponent {
         }
         this.ztreeObj.updateNode(newfile);
         return { newfile, parentFolder }
+        // configure.addFile && configure.addFile(parentFolder, newfile._source)
+
     }
     exeConfigureRename(inputval, oldsource, node) {
         node.name = inputval;
@@ -325,10 +334,8 @@ export default class ReactZtree extends PureComponent {
             upparentNode._source.subdirectory = parentNode._source;
             return this.repairUpdirectory(upparentNode)
         }
-
     }
     repairSubdirectory(treeNode) { //向下更改 存在子文件的文件夹    
-
         if (treeNode.isParent && treeNode.check_Child_State === 0) {
             let children = treeNode.children;
             children.forEach((child) => {
@@ -405,7 +412,6 @@ export default class ReactZtree extends PureComponent {
                 }).appendTo('#' + node.tId + "_span");//追加到body内
                 inputObj.focus();
                 check = false;
-                //return false;
             }
         })
         inputObj.bind('blur', function (event) {
@@ -436,16 +442,21 @@ export default class ReactZtree extends PureComponent {
     }
 
     render() {
-        const id = this.props.id ? this.props.id : "treeDemo";
+        const id = this.props.id ? this.props.id : "filetree";
+        const rMenustyle = {
+            visibility: this.state.menuvisibility,
+            top: this.state.menuY,
+            left: this.state.menuX
+        }
         return (
             <div id='tree'>
                 <div id={id} className="ztree" ref={this.ztree}></div>
-                <div id="rMenu">
+                <div id="rMenu" style={rMenustyle}>
                     <ul className="menu">
                         <li id="m_addfile" className='item'>新建文件</li>
                         <li id="m_addfolder" className='item'>新建文件夹</li>
-                        <li id="m_rename" className='item'>重命名</li>
-                        <li id="m_del" className='item'>删除</li>
+                        <li id="m_rename" className={this.state.itemclassName} >重命名</li>
+                        <li id="m_del" className={this.state.itemclassName} >删除</li>
                     </ul>
                 </div>
             </div>

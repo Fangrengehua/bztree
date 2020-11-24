@@ -32,13 +32,17 @@ website:    http://code.google.com/p/jquerytree/
 	border-bottom: #cfcfcf solid 1px;
     background-color: #ffffff; 
 }
+
 #rMenu .menu .item:hover {
   color: #ffffff;
   background-color: #0971f1;
 }
+#rMenu .menu .falseitem{
+	color:#cfcfcf
+}
 
 /* ztree style */
-#tree #treeDemo{
+#tree #filetree{
 	width: 350px;
 	height: 100vh;
 	background-color:  #f5f5f5;
