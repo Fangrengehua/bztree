@@ -5,6 +5,7 @@ import '../src/css/tree-style.css'
 import '../src/css/icon.css'
 
 export default class ReactZtree extends PureComponent {
+
     constructor(props) {
         super(props);
         this.state = {
@@ -12,6 +13,7 @@ export default class ReactZtree extends PureComponent {
             menuX: 0,
             menuY: 0,
             itemclassName: 'item',
+            isOut: false,
         }
         this.ztree = React.createRef()
     }
@@ -39,9 +41,7 @@ export default class ReactZtree extends PureComponent {
         });
         return zNodes;
     }
-
     componentDidMount() {
-        const _this = this;
         const { filetree } = this.props
         const setting = {
             view: {
@@ -65,237 +65,160 @@ export default class ReactZtree extends PureComponent {
                 enable: false
             },
             callback: {
-                onClick: onClick,
-                onRightClick: onRightClick,
+                onClick: this.onClick.bind(this),
+                onRightClick: this.onRightClick.bind(this),
             }
         }
         var zNodes = [];
         zNodes = this.convert(filetree, zNodes);
         //初始化文件树
-        var zTree = this.ztreeObj = $.fn.zTree.init($(this.ztree.current), setting, zNodes);
-        function onRightClick(event, treeId, treeNode) {
-            if (!treeNode && event.target.tagName.toLowerCase() !== "button" && $(event.target).parents("a").length === 0) {
-                zTree.cancelSelectedNode();
-                showRMenu("root", event.clientX, event.clientY);
-                console.log(treeId)
-            } else if (treeNode && !treeNode.noR) {
-                zTree.selectNode(treeNode);
-                showRMenu("node", event.clientX, event.clientY);
-            }
-
+        this.ztreeObj = $.fn.zTree.init($(this.ztree.current), setting, zNodes);
+    }
+    onClick(e, treeId, treeNode) {
+        const zTree = this.ztreeObj;
+        zTree.expandNode(treeNode);
+        const configure = this.props.configure;
+        let result = configure.clickFile(treeNode._source);
+        result.then(null, () => {
+            console.log("用户click执行失败");
+        })
+    }
+    onRightClick(event, treeId, treeNode) {
+        const zTree = this.ztreeObj;
+        if (!treeNode && event.target.tagName.toLowerCase() !== "button" && $(event.target).parents("a").length === 0) {
+            zTree.cancelSelectedNode();
+            this.showRMenu("root", event.clientX, event.clientY);
+        } else if (treeNode && !treeNode.noR) {
+            zTree.selectNode(treeNode);
+            this.showRMenu("node", event.clientX, event.clientY);
         }
-        function showRMenu(type, x, y) { //type决定menu菜单内容，x,y决定menu显示位置
-            if (type === "root") {
-                $("#m_del").unbind('click', remove)
-                $("#m_rename").unbind('click', rename)
-                _this.setState({ itemclassName: 'falseitem' })
+    }
+    showRMenu(type, x, y) { //type决定menu菜单内容，x,y决定menu显示位置
+        y += document.body.scrollTop;
+        x += document.body.scrollLeft;
+        if (type === "root") {
+            this.setState({ menuvisibility: 'visible', menuX: x, menuY: y,itemclassName: 'falseitem', isOut: true })
+        } else {
+            this.setState({ menuvisibility: 'visible', menuX: x, menuY: y,itemclassName: 'item', isOut: false })
+        }
+
+        $("body").bind("mousedown", (event) => { this.onBodyMouseDown(event) });
+    }
+    onBodyMouseDown(event, node) {
+        if (!(event.target.id === "rMenu" || $(event.target).parents("#rMenu").length > 0)) {
+            this.setState({ menuvisibility: 'hidden' });
+        }
+    }
+    hideRMenu() {
+        if (this.setState({ menuvisibility: 'hidden' }));
+        $("body").unbind("mousedown", (event) => { this.onBodyMouseDown(event) });
+    }
+    filecount = 1;
+    foldercount = 1;
+    create(isFolder) {
+        this.hideRMenu();
+        const configure = this.props.configure;
+        const zTree = this.ztreeObj;
+        var newfilename = isFolder ? "new folder" + this.foldercount++ : "new file" + this.filecount++;
+        var newId, pId;
+        var parentNode = zTree.getSelectedNodes()[0];
+        //生成pId和id
+        if (parentNode) {
+            if (parentNode.check_Child_State < 0) { //空文件夹中新建
+                newId = parentNode.id * 10 + 1;
             } else {
-                $("#m_del").unbind('click').bind('click', remove)
-                $("#m_rename").unbind('click').bind('click', rename)
-                _this.setState({ itemclassName: 'item' })
+                let parentLastChildId = parentNode.children[parentNode.children.length - 1].id
+                newId = parentLastChildId + 1;
             }
-            y += document.body.scrollTop;
-            x += document.body.scrollLeft;
-            _this.setState({ menuvisibility: 'visible', menuX: x, menuY: y })
-            $("body").bind("mousedown", onBodyMouseDown);
+            pId = parentNode.id;
+        } else {
+            var parentNodes = zTree.getNodes();
+            newId = parentNodes.length + 1;
+            pId = 0;
         }
-        function onBodyMouseDown(event, node) {
-            if (!(event.target.id === "rMenu" || $(event.target).parents("#rMenu").length > 0)) {
-                _this.setState({ menuvisibility: 'hidden' })
-            }
+        //生成树节点和文件节点
+        var newfile = {
+            id: newId,
+            pId: pId,
+            isParent: isFolder,
+            name: newfilename
         }
-        function hideRMenu() {
-            if (_this.setState({ menuvisibility: 'hidden' }));
-            $("body").unbind("mousedown", onBodyMouseDown);
+        newfile._source = {
+            id: newfile.id,
+            tId: newfile.tId,
+            pTId: newfile.parentTId,
+            filename: newfile.name,
+            isFolder: isFolder,
         }
-        $("#m_addfile").unbind('click').bind('click', addFile);
-        $("#m_addfolder").unbind('click').bind('click', addFolder);
-        $("#m_rename").unbind('click').bind('click', rename);
-        $("#m_del").unbind('click').bind('click', remove);
+        if (isFolder) {
+            newfile._source.entend = false;
+            newfile._source.subdirectory = [];
+        }
+        parentNode = zTree.addNodes(parentNode, newfile);
 
-        function onClick(e, treeId, treeNode) {
-            zTree.expandNode(treeNode);
-            const configure = _this.props.configure;
-            let result = configure.clickFile(treeNode._source);
-            result.then(() => {
-                console.log("onClick", treeNode);
-            }, () => {
-                console.log("用户click执行失败");
-            })
-        }
-        var filecount = 1;
-        function addFile(parentNode, newfilename) {
-            hideRMenu();
-            const configure = _this.props.configure;
+        if (parentNode) { //生成成功重命名
+            newfile = parentNode[0];
+            this.editName(newfile, (inputval) => {
+                let fileobj = this.exeConfigureAdd(inputval, newfile)
+                let result = isFolder ?
+                    configure.addFolder(fileobj.parentFolder, fileobj.newfile._source)
+                    : configure.addFile(fileobj.parentFolder, fileobj.newfile._source)
 
-            newfilename = "new file" + filecount++;
-            parentNode = zTree.getSelectedNodes()[0];
-            var newId;
-            if (parentNode) {
-                if (parentNode.check_Child_State < 0) { //空文件夹中新建
-                    newId = parentNode.id * 10 + 1;
-                } else {
-                    let parentLastChildId = parentNode.children[parentNode.children.length - 1].id
-                    newId = parentLastChildId + 1;
-                }
-                var newfile = {
-                    id: newId,
-                    pId: parentNode.id,
-                    isParent: false,
-                    name: newfilename
-                }
-                newfile._source = {
-                    id: newfile.id,
-                    tId: newfile.tId,
-                    pTId: newfile.parentTId,
-                    filename: newfile.name,
-                    isFolder: false,
-                }
-                parentNode = zTree.addNodes(parentNode, newfile);
-            } else {
-                var parentNodes = zTree.getNodes(); //可以获取所有的父节点
-                newfile = {
-                    id: parentNodes.length + 1,
-                    pId: 0,
-                    isParent: false,
-                    name: newfilename
-                }
-                newfile._source = {
-                    id: newfile.id,
-                    tId: newfile.tId,
-                    pTId: newfile.parentTId,
-                    filename: newfile.name,
-                    isFolder: false,
-                }
-                parentNode = zTree.addNodes(null, newfile)
-            }
-            if (parentNode) {
-                newfile = parentNode[0];
-                _this.editName(newfile, (inputval) => {
-                    var fileobj = _this.exeConfigureAdd(inputval, newfile)
-                    let result = configure.addFile(fileobj.parentFolder, fileobj.newfile._source)
-                    result.then(null,
-                        () => {
-                            if (configure.error) {
-                                configure.errorCallBack ? configure.errorCallBack() : console.log("errorCallBack is undefined")
-                            }
-                            _this.removeFilefromParent(fileobj.newfile)
-                            zTree.removeNode(fileobj.newfile);
-                            console.log("用户addFile执行失败");
-                        })
-                });
-            }
-        }
-        var foldercount = 1;
-        function addFolder(parentNode) {
-            hideRMenu();
-            const configure = _this.props.configure;
-            var newfile;
-            var newfilename = "new folder" + foldercount++
-            parentNode = zTree.getSelectedNodes()[0];
-            var newId;
-            if (parentNode) {  //选中节点下新建
-                if (parentNode.check_Child_State < 0) {//空文件夹中新建
-                    newId = parentNode.id * 10 + 1;
-                } else {
-                    let parentLastChildId = parentNode.children[parentNode.children.length - 1].id
-                    newId = parentLastChildId + 1;
-                }
-                newfile = {
-                    id: newId,
-                    pId: parentNode.id,
-                    isParent: true,
-                    name: newfilename
-                }
-                newfile._source = {
-                    id: newfile.id,
-                    tId: newfile.tId,
-                    pTId: newfile.parentTId,
-                    filename: newfile.name,
-                    isFolder: true,
-                    entend: false,
-                    subdirectory: []
-                }
-                parentNode = zTree.addNodes(parentNode, newfile);
-            } else { //根目录下新建
-                var nodes = zTree.getNodes(); //可以获取所有的父节点
-                newfile = {
-                    id: nodes.length + 1,
-                    pId: 0,
-                    isParent: true,
-                    name: newfilename
-                }
-                newfile._source = {
-                    id: newfile.id,
-                    tId: newfile.tId,
-                    pTId: newfile.parentTId,
-                    filename: newfile.name,
-                    isFolder: true,
-                    entend: false,
-                    subdirectory: []
-                }
-                parentNode = zTree.addNodes(null, newfile);
-            }
-            if (parentNode) {
-                newfile = parentNode[0];
-                _this.editName(newfile, (inputval) => {
-                    var fileobj = _this.exeConfigureAdd(inputval, newfile)
-                    let result = configure.addFolder(fileobj.parentFolder, fileobj.newfile._source);
-                    result.then(null, () => {
+                result.then(null,
+                    () => { //错误处理
                         if (configure.error) {
                             configure.errorCallBack ? configure.errorCallBack() : console.log("errorCallBack is undefined")
                         }
-                        _this.removeFilefromParent(fileobj.newfile)
+                        this.removeFilefromParent(fileobj.newfile)
                         zTree.removeNode(fileobj.newfile);
-                        console.log("用户addFolder执行失败")
+                        console.log("用户create执行失败");
                     })
-                });
-            }
+            });
         }
-        function rename(oldname) {
-            hideRMenu();
-            const configure = _this.props.configure;
+    }
+    rename() {
+        this.hideRMenu();
+        const configure = this.props.configure;
+        const zTree = this.ztreeObj;
+        var node = zTree.getSelectedNodes()[0];
+        //const oldsource = { ...node._source };
+        var oldsource = $.extend({}, node._source); //jquery深拷贝
+        const oldname = node.name;
 
-            var node = zTree.getSelectedNodes()[0];
-            //const oldsource = { ...node._source };
-            var oldsource = $.extend({}, node._source); //jquery深拷贝
-            oldname = node.name;
-
-            _this.editName(node, (inputval) => {
-                _this.exeConfigureRename(inputval, oldsource, node);
-                let result = configure.rename(oldsource, node._source);
-                result.then(null, () => {
-                    if (configure.error) {
-                        configure.errorCallBack ? configure.errorCallBack() : console.log("errorCallBack is undefined")
-                    }
-                    node.name = oldname;
-                    _this.exeConfigureRename(node.name, oldsource, node, configure);
-                    console.log("用户rename执行失败")
-                })
+        this.editName(node, (inputval) => {
+            this.exeConfigureRename(inputval, oldsource, node);
+            let result = configure.rename(oldsource, node._source);
+            result.then(null, () => {
+                if (configure.error) {
+                    configure.errorCallBack ? configure.errorCallBack() : console.log("errorCallBack is undefined")
+                }
+                node.name = oldname;
+                this.exeConfigureRename(node.name, oldsource, node);
+                console.log("用户rename执行失败")
             })
-        }
-        function remove(node) {
-            hideRMenu();
-            const configure = _this.props.configure;
-            node = zTree.getSelectedNodes()[0];
-            let result = configure.remove(node._source);
-            result.then(
-                () => {
-                    _this.removeFilefromParent(node)
-                    zTree.removeNode(node);
-                    console.log("用户remove执行成功");
-                },
-                () => {
-                    if (configure.error) {
-                        configure.errorCallBack ? configure.errorCallBack() : console.log("errorCallBack is undefined")
-                    }
-                    console.log("用户remove执行失败");
-                })
-        }
+        })
+    }
+    remove() {
+        this.hideRMenu();
+        const configure = this.props.configure;
+        const zTree = this.ztreeObj;
+        let node = zTree.getSelectedNodes()[0];
+        let result = configure.remove(node._source);
+        result.then(
+            () => {
+                this.removeFilefromParent(node)
+                zTree.removeNode(node);
+                //console.log("用户remove执行成功");
+            },
+            () => {
+                if (configure.error) {
+                    configure.errorCallBack ? configure.errorCallBack() : console.log("errorCallBack is undefined")
+                }
+                console.log("用户remove执行失败");
+            })
     }
     exeConfigureAdd(inputval, newfile) {
         newfile.name = inputval;
-        //newfile._source.filename = inputval;
         var parentFolder = null;
         var parentNode = newfile.getParentNode();
         if (parentNode) {
@@ -305,7 +228,6 @@ export default class ReactZtree extends PureComponent {
         }
         this.ztreeObj.updateNode(newfile);
         return { newfile, parentFolder }
-        // configure.addFile && configure.addFile(parentFolder, newfile._source)
 
     }
     exeConfigureRename(inputval, oldsource, node) {
@@ -325,7 +247,6 @@ export default class ReactZtree extends PureComponent {
 
         this.ztreeObj.updateNode(node);
         this.repairSubdirectory(node)
-        //configure.rename && configure.rename(oldsource, node._source)
     }
     repairUpdirectory(parentNode) { //更新上级目录的子目录
         //向上更改
@@ -371,7 +292,7 @@ export default class ReactZtree extends PureComponent {
                 var children = parentNode.children; // 
                 children.forEach((item) => {
                     if (item.tId !== treeNode.tId && item.name === inputval) {
-                        reason = "文件名重复";
+                        reason = "文件名有重复";
                         return reason;
                     }
                 })
@@ -379,7 +300,7 @@ export default class ReactZtree extends PureComponent {
                 var nodes = this.ztreeObj.getNodes(); //根目录
                 nodes.forEach((item) => {
                     if (item.tId !== treeNode.tId && item.name === inputval) {
-                        reason = "文件名重复";
+                        reason = "文件名有重复";
                         return reason;
                     }
                 })
@@ -420,7 +341,6 @@ export default class ReactZtree extends PureComponent {
                 inputval = node.name;
             }
             cb(inputval);
-            //return inputval;
 
         }).bind('keydown', function (event) {
             var inputval = inputObj.val();
@@ -429,16 +349,12 @@ export default class ReactZtree extends PureComponent {
                     inputval = node.name;
                 }
                 cb(inputval);
-                //return inputval;
             }
         }).bind('click', function (event) {
             return false;
         }).bind('dblclick', function (event) {
             return false;
         });
-    }
-    componentWillUnmount() {
-        this.ztreeObj && this.ztreeObj.destroy();
     }
 
     render() {
@@ -453,10 +369,10 @@ export default class ReactZtree extends PureComponent {
                 <div id={id} className="ztree" ref={this.ztree}></div>
                 <div id="rMenu" style={rMenustyle}>
                     <ul className="menu">
-                        <li id="m_addfile" className='item'>新建文件</li>
-                        <li id="m_addfolder" className='item'>新建文件夹</li>
-                        <li id="m_rename" className={this.state.itemclassName} >重命名</li>
-                        <li id="m_del" className={this.state.itemclassName} >删除</li>
+                        <li onClick={() => { this.create(false) }} className='item'>新建文件</li>
+                        <li onClick={() => { this.create(true) }} className='item'>新建文件夹</li>
+                        <li onClick={this.state.isOut ? null : () => { this.rename() }} className={this.state.itemclassName} >重命名</li>
+                        <li onClick={this.state.isOut ? null : () => { this.remove() }} className={this.state.itemclassName} >删除</li>
                     </ul>
                 </div>
             </div>
