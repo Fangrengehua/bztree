@@ -73,6 +73,8 @@ export default class ReactZtree extends PureComponent {
         zNodes = this.convert(filetree, zNodes);
         //初始化文件树
         this.ztreeObj = $.fn.zTree.init($(this.ztree.current), setting, zNodes);
+        this.filecount = 1;
+        this.foldercount = 1;
     }
     onClick(e, treeId, treeNode) {
         const zTree = this.ztreeObj;
@@ -97,9 +99,9 @@ export default class ReactZtree extends PureComponent {
         y += document.body.scrollTop;
         x += document.body.scrollLeft;
         if (type === "root") {
-            this.setState({ menuvisibility: 'visible', menuX: x, menuY: y,itemclassName: 'falseitem', isOut: true })
+            this.setState({ menuvisibility: 'visible', menuX: x, menuY: y, itemclassName: 'falseitem', isOut: true })
         } else {
-            this.setState({ menuvisibility: 'visible', menuX: x, menuY: y,itemclassName: 'item', isOut: false })
+            this.setState({ menuvisibility: 'visible', menuX: x, menuY: y, itemclassName: 'item', isOut: false })
         }
 
         $("body").bind("mousedown", (event) => { this.onBodyMouseDown(event) });
@@ -113,8 +115,7 @@ export default class ReactZtree extends PureComponent {
         if (this.setState({ menuvisibility: 'hidden' }));
         $("body").unbind("mousedown", (event) => { this.onBodyMouseDown(event) });
     }
-    filecount = 1;
-    foldercount = 1;
+
     create(isFolder) {
         this.hideRMenu();
         const configure = this.props.configure;
@@ -208,7 +209,7 @@ export default class ReactZtree extends PureComponent {
             () => {
                 this.removeFilefromParent(node)
                 zTree.removeNode(node);
-                //console.log("用户remove执行成功");
+                console.log("用户remove执行成功");
             },
             () => {
                 if (configure.error) {
@@ -247,6 +248,7 @@ export default class ReactZtree extends PureComponent {
 
         this.ztreeObj.updateNode(node);
         this.repairSubdirectory(node)
+        //configure.rename && configure.rename(oldsource, node._source)
     }
     repairUpdirectory(parentNode) { //更新上级目录的子目录
         //向上更改
@@ -292,7 +294,7 @@ export default class ReactZtree extends PureComponent {
                 var children = parentNode.children; // 
                 children.forEach((item) => {
                     if (item.tId !== treeNode.tId && item.name === inputval) {
-                        reason = "文件名有重复";
+                        reason = "文件名重复";
                         return reason;
                     }
                 })
@@ -300,7 +302,7 @@ export default class ReactZtree extends PureComponent {
                 var nodes = this.ztreeObj.getNodes(); //根目录
                 nodes.forEach((item) => {
                     if (item.tId !== treeNode.tId && item.name === inputval) {
-                        reason = "文件名有重复";
+                        reason = "文件名重复";
                         return reason;
                     }
                 })
