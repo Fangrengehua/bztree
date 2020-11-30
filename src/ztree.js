@@ -1,8 +1,8 @@
 import React, { PureComponent } from 'react';
 import $ from 'jquery';
 import './jquery.ztree.all';
-import '../src/css/tree-style.css'
-import '../src/css/icon.css'
+import './css/tree-style.css'
+import './css/icon.css'
 
 export default class ReactZtree extends PureComponent {
 
@@ -16,6 +16,9 @@ export default class ReactZtree extends PureComponent {
             isOut: false,
         }
         this.ztree = React.createRef()
+        this.selectFile.bind(this);
+        this.cancelSelectedFile.bind(this);
+        this.getSelectedFiles.bind(this);
     }
     convert(filetree, zNodes, pId) {
         filetree.forEach((filenode, index) => {
@@ -69,6 +72,7 @@ export default class ReactZtree extends PureComponent {
                 onRightClick: this.onRightClick.bind(this),
             }
         }
+        this.props.onRef && this.props.onRef(this)
         var zNodes = [];
         zNodes = this.convert(filetree, zNodes);
         //初始化文件树
@@ -115,7 +119,21 @@ export default class ReactZtree extends PureComponent {
         if (this.setState({ menuvisibility: 'hidden' }));
         $("body").unbind("mousedown", (event) => { this.onBodyMouseDown(event) });
     }
-
+    selectFile(tId) {
+        if (!tId) {
+            return;
+        }
+        var node = this.ztreeObj.getNodeByTId(tId);
+        this.ztreeObj.selectNode(node)
+    }
+    cancelSelectedFile() {
+        this.ztreeObj.cancelSelectedNode();
+    }
+    getSelectedFiles() {
+        var nodes = this.ztreeObj.getSelectedNodes();
+        var files = nodes[0]._source;
+        return files;
+    }
     create(isFolder) {
         this.hideRMenu();
         const configure = this.props.configure;

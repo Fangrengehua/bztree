@@ -17,6 +17,7 @@
     isFolder|bool|是否为文件夹(用户指定,default:false)
     extend|bool|是否展开文件夹(用户指定,default:false)
     subdirectory|fileNode数组|子文件目录(用户指定,default:[])
+    tId|string|fileNode唯一标识(组件内部生成，请勿提前赋值)
     
 
     示例:
@@ -102,13 +103,34 @@
 
     指定文件树id，生成文件tId前缀，用于标识文件所属文件树。(default:filetree)
 
-<!-- >**获取组件实例，调用zTree插件API**
+>**获取组件实例**
 
- [jquery zTree]: http://www.treejs.cn/v3/api.php "jquery zTree API"
-使用ref获取ztree实例，进而可以使用 [jquery zTree] 中的API(更多treeNode属性也可在里面查看)
+在本组件上指定属性onRef
 
-    获取zTreeObj: this.ztree.current.ztreeObj -->
+    <Ztree onRef={(ref) => { this.ztree = ref}}/>
 
+之后可以通过 this.tab_control 调用本组件内的方法：
+
+    - this.ztree.selectFile(tId)
+        
+        用途：选中指定文件，原先被选中的文件节点会被取消选中状态
+
+        参数说明：
+            tId: (string)组件初始化时为fileNode添加的属性tId
+
+        无返回值
+
+    - this.ztree.cancelSelectedFile()
+
+        用途：取消选中当前选中文件
+            
+        无返回值
+
+    - this.ztree.getSelectedFiles()
+
+        用途：获取当前选中节点的数据
+
+        返回值：(fileNode)当前被选中的节点数据集合
 
 ## example
 ```js
@@ -242,6 +264,7 @@ function App() {
                 id="treeDemo"
                 configure={configure}
                 filetree={filetree}
+                onRef={(ref) => { this.ztree = ref}}
             />
         </div>
     );
