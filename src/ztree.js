@@ -183,7 +183,7 @@ export default class ReactZtree extends PureComponent {
                     configure.addFolder(fileobj.parentFolder, fileobj.newfile._source)
                     : configure.addFile(fileobj.parentFolder, fileobj.newfile._source)
 
-                result.then(null,
+                result.then(() => { this.ztreeObj.selectNode(newfile) },
                     () => { //错误处理
                         if (configure.error) {
                             configure.errorCallBack ? configure.errorCallBack() : console.log("errorCallBack is undefined")
